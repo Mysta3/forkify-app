@@ -6,6 +6,7 @@ import Likes from './models/Likes';
 import * as searchView from './views/searchView';
 import * as recipeView from './views/recipeView';
 import * as listView from './views/listView';
+import * as likesView from './views/likesView';
 import { elements, renderLoader, clearLoader } from './views/base';
 import Likes from './models/Likes';
 
@@ -93,7 +94,7 @@ const controlRecipe = async () => {
 
       //render recipe
       clearLoader();
-      recipeView.renderRecipe(state.recipe);
+      recipeView.renderRecipe(state.recipe, state.likes.isLiked(id));
     } catch (error) {
       alert('Error processing recipe!');
     }
@@ -154,17 +155,36 @@ const controlLike = () => {
       state.recipe.img
     );
     //Toggle like button
+    likesView.toggleLikeBtn(true);
 
     //add like to UI list
-    state.likes.deletedLike(currentId);
+    likesView.renderLike(newLike);
 
     //User HAS liked current recipe
   } else {
     //Remove like to the state
+    state.likes.deletedLike(currentId);
+
     //Toggle like button
+    likesView.toggleLikeBtn(false);
     //Remove like to UI list
+    likesView.deleteLike(currentId);
   }
 };
+
+//Restore like recipe on page load
+window.addEventListener('load', () => {
+  MediaStreamTrackAudioSourceNode.like = new Likes();
+
+  //restore likes
+  state.likes.readStorage();
+
+  //toggle like menu button
+  likesView.toggleLikeMenu(state.likes.getNumLikes());
+
+  //Render the existing likes
+  state.likes.likes.forEach((like) => likes.likesView.renderLike(like));
+});
 
 //Handling recipe button clicks
 elements.recipe.addEventListener('click', (e) => {
